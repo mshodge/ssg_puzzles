@@ -18,6 +18,7 @@ app.add_middleware(
 @app.get("/health")
 def health_check():
     import os
+    from datetime import datetime
     db_url = os.environ.get("DATABASE_URL", "NOT_SET")
     # Mask password for security
     if db_url != "NOT_SET" and "@" in db_url:
@@ -28,7 +29,9 @@ def health_check():
     return {
         "status": "ok",
         "database_url_set": db_url != "NOT_SET",
-        "database_url_preview": masked[:50] + "..." if len(masked) > 50 else masked
+        "database_url_preview": masked[:50] + "..." if len(masked) > 50 else masked,
+        "cors_enabled": True,
+        "timestamp": datetime.utcnow().isoformat()
     }
 
 app.include_router(router)
