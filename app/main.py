@@ -21,6 +21,18 @@ app.add_middleware(
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok"}
+    import os
+    db_url = os.environ.get("DATABASE_URL", "NOT_SET")
+    # Mask password for security
+    if db_url != "NOT_SET" and "@" in db_url:
+        parts = db_url.split("@")
+        masked = parts[0].split(":")[0] + ":****@" + parts[1]
+    else:
+        masked = db_url
+    return {
+        "status": "ok",
+        "database_url_set": db_url != "NOT_SET",
+        "database_url_preview": masked[:50] + "..." if len(masked) > 50 else masked
+    }
 
 app.include_router(router)
