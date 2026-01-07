@@ -49,15 +49,46 @@ export default function CreatePuzzle({ onCreated }: any) {
   }
 
   async function saveSolutionAndSubmit() {
-    // Save solution positions
-    setSolutionPositions([...players]);
+    // Save solution positions in state for UI
+    const currentSolutionPositions = [...players];
+    setSolutionPositions(currentSolutionPositions);
+    
+    // Build payload with current solution positions
+    const ballCarrier = startingPositions.find(p => p.hasBall) || players.find(p => p.hasBall);
+    
+    const submitPayload = {
+      title,
+      description,
+      team_name: teamName,
+      hint: hint || null,
+      solution_answer: solutionAnswer || null,
+      format: "4v4",
+      mode,
+      team_a_color: "#ff0000",
+      team_b_color: "#0000ff",
+      players: startingPositions.map(p => ({ 
+        team: p.id.startsWith("A") ? "A" : "B", 
+        label: p.id
+      })),
+      starting_positions: startingPositions.map(p => ({ player_label: p.id, square_id: p.square })),
+      locked_positions: startingPositions
+        .filter(p => p.locked)
+        .map(p => ({ player_label: p.id, square_id: p.square })),
+      solution_positions: currentSolutionPositions
+        .filter(sp => {
+          const start = startingPositions.find(st => st.id === sp.id);
+          return start && start.square !== sp.square;
+        })
+        .map(p => ({ player_label: p.id, square_id: p.square })),
+      ball_carrier_label: ballCarrier?.id || "A1"
+    };
     
     // Submit puzzle immediately
     try {
       const res = await fetch(`${API_URL}/puzzles`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(submitPayload),
       });
 
       if (!res.ok) {
@@ -78,35 +109,6 @@ export default function CreatePuzzle({ onCreated }: any) {
       alert("Error creating puzzle. Check console for details.");
     }
   }
-
-  const ballCarrier = startingPositions.find(p => p.hasBall) || players.find(p => p.hasBall);
-
-  const payload = {
-    title,
-    description,
-    team_name: teamName,
-    hint: hint || null,
-    solution_answer: solutionAnswer || null,
-    format: "4v4",
-    mode,
-    team_a_color: "#ff0000",
-    team_b_color: "#0000ff",
-    players: startingPositions.map(p => ({ 
-      team: p.id.startsWith("A") ? "A" : "B", 
-      label: p.id  // Use full ID (A1, A2, B1, B2) as label for backend
-    })),
-    starting_positions: startingPositions.map(p => ({ player_label: p.id, square_id: p.square })),
-    locked_positions: startingPositions
-      .filter(p => p.locked)
-      .map(p => ({ player_label: p.id, square_id: p.square })),
-    solution_positions: solutionPositions
-      .filter(sp => {
-        const start = startingPositions.find(st => st.id === sp.id);
-        return start && start.square !== sp.square;
-      })
-      .map(p => ({ player_label: p.id, square_id: p.square })),
-    ball_carrier_label: ballCarrier?.id || "A1"
-    };
 
   function resetForm() {
     setTitle("");
