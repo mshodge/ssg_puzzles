@@ -1,29 +1,3 @@
-// import { useEffect, useState } from "react";
-// import Pitch from "./components/Pitch";
-
-// function App() {
-//   const [puzzle, setPuzzle] = useState<any>(null);
-
-//   useEffect(() => {
-//     fetch("http://127.0.0.1:8000/puzzles/a691480d-efe2-4ead-9622-77b6865fb1fd")
-//       .then((res) => res.json())
-//       .then(setPuzzle);
-//   }, []);
-
-//   if (!puzzle) {
-//     return <div>Loading puzzle...</div>;
-//   }
-
-//   return (
-//     <div style={{ maxWidth: 600, margin: "0 auto" }}>
-//       <h2>{puzzle.title}</h2>
-//       <Pitch puzzle={puzzle} />
-//     </div>
-//   );
-// }
-
-// export default App;
-
 import { useState, useEffect } from "react";
 import CreatePuzzle from "./CreatePuzzle";
 import Solve from "./Solve";
@@ -34,9 +8,24 @@ export default function App() {
   const [selectedPuzzleId, setSelectedPuzzleId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check if URL is a direct puzzle link on mount
+    const path = window.location.pathname;
+    const puzzleMatch = path.match(/^\/puzzle\/([a-f0-9-]+)$/);
+    if (puzzleMatch) {
+      setSelectedPuzzleId(puzzleMatch[1]);
+      setCurrentPath("/solve");
+    }
+
     const handlePopState = () => {
-      setCurrentPath(window.location.pathname);
-      setSelectedPuzzleId(null);
+      const path = window.location.pathname;
+      const puzzleMatch = path.match(/^\/puzzle\/([a-f0-9-]+)$/);
+      if (puzzleMatch) {
+        setSelectedPuzzleId(puzzleMatch[1]);
+        setCurrentPath("/solve");
+      } else {
+        setCurrentPath(path);
+        setSelectedPuzzleId(null);
+      }
     };
     
     window.addEventListener("popstate", handlePopState);
@@ -51,6 +40,7 @@ export default function App() {
 
   function selectPuzzle(puzzleId: string) {
     setSelectedPuzzleId(puzzleId);
+    window.history.pushState({}, "", `/puzzle/${puzzleId}`);
   }
 
   return (
@@ -65,7 +55,7 @@ export default function App() {
         }}
       >
       <nav style={{ 
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        background: "linear-gradient(135deg, #ba0000 0%, #000000 100%)",
         padding: "16px 32px", 
         display: "flex",
         alignItems: "center",
@@ -81,7 +71,7 @@ export default function App() {
             color: "white",
             letterSpacing: "-0.5px"
           }}>
-            Fun Football Tactics Puzzles for Kids
+            Football Tactics Puzzles for Kids
           </h1>
         </div>
         
@@ -155,7 +145,10 @@ export default function App() {
           {selectedPuzzleId ? (
             <PuzzleSolver 
               puzzleId={selectedPuzzleId} 
-              onBack={() => setSelectedPuzzleId(null)} 
+              onBack={() => {
+                setSelectedPuzzleId(null);
+                window.history.pushState({}, "", "/solve");
+              }} 
             />
           ) : currentPath === "/solve" ? (
             <Solve onSelectPuzzle={selectPuzzle} />

@@ -42,7 +42,7 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
         .flatMap(([_, team]: any) =>
           team.players.map((p: any) => ({
             id: p.id,
-            label: p.label,
+            label: p.label.replace(/^[AB]/, ''), // Display just the number (1-4) instead of A1-B4
             square: p.start_square,
             color: team.color,
             hasBall: p.has_ball,
@@ -148,20 +148,43 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
   return (
     <div style={{ padding: "40px 24px" }}>
       <div>
-        <button
-          onClick={onBack}
-          style={{
-            marginBottom: 16,
-            padding: "8px 16px",
-            backgroundColor: "#64748b",
-            color: "white",
-            border: "none",
-            borderRadius: 4,
-            cursor: "pointer",
-          }}
-        >
-          ← Back to Puzzles
-        </button>
+        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+          <button
+            onClick={onBack}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "#64748b",
+              color: "white",
+              border: "none",
+              borderRadius: 4,
+              cursor: "pointer",
+            }}
+          >
+            ← Back to Puzzles
+          </button>
+          
+          <button
+            onClick={() => {
+              const url = `${window.location.origin}/puzzle/${puzzleId}`;
+              navigator.clipboard.writeText(url).then(() => {
+                alert("Puzzle link copied to clipboard!");
+              });
+            }}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "#0ea5e9",
+              color: "white",
+              border: "none",
+              borderRadius: 4,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            🔗 Share Puzzle
+          </button>
+        </div>
 
         <div style={{ marginBottom: 24 }}>
           <h2 style={{ margin: "0 0 8px 0" }}>{puzzle.title}</h2>

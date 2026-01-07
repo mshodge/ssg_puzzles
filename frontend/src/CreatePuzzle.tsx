@@ -48,8 +48,35 @@ export default function CreatePuzzle({ onCreated }: any) {
     setStep("solution");
   }
 
-  function saveSolutionPositions() {
+  async function saveSolutionAndSubmit() {
+    // Save solution positions
     setSolutionPositions([...players]);
+    
+    // Submit puzzle immediately
+    try {
+      const res = await fetch(`${API_URL}/puzzles`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const error = await res.text();
+        console.error("Failed to create puzzle:", error);
+        alert("Failed to create puzzle. Check console for details.");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Puzzle created:", data);
+      setCreatedPuzzle({ id: data.id, title: data.title, teamName: data.team_name });
+      if (onCreated) {
+        onCreated(data.id);
+      }
+    } catch (error) {
+      console.error("Error creating puzzle:", error);
+      alert("Error creating puzzle. Check console for details.");
+    }
   }
 
   const ballCarrier = startingPositions.find(p => p.hasBall) || players.find(p => p.hasBall);
@@ -80,33 +107,6 @@ export default function CreatePuzzle({ onCreated }: any) {
       .map(p => ({ player_label: p.id, square_id: p.square })),
     ball_carrier_label: ballCarrier?.id || "A1"
     };
-
-  async function submit() {
-    try {
-      const res = await fetch(`${API_URL}/puzzles`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const error = await res.text();
-        console.error("Failed to create puzzle:", error);
-        alert("Failed to create puzzle. Check console for details.");
-        return;
-      }
-
-      const data = await res.json();
-      console.log("Puzzle created:", data);
-      setCreatedPuzzle({ id: data.id, title: data.title, teamName: data.team_name });
-      if (onCreated) {
-        onCreated(data.id);
-      }
-    } catch (error) {
-      console.error("Error creating puzzle:", error);
-      alert("Error creating puzzle. Check console for details.");
-    }
-  }
 
   function resetForm() {
     setTitle("");
@@ -157,6 +157,29 @@ export default function CreatePuzzle({ onCreated }: any) {
             </p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
               <button 
+                onClick={() => {
+                  const url = `${window.location.origin}/puzzle/${createdPuzzle.id}`;
+                  navigator.clipboard.writeText(url).then(() => {
+                    alert("Puzzle link copied to clipboard! Share it with your team.");
+                  });
+                }}
+                style={{ 
+                  padding: "12px 24px", 
+                  fontSize: 16, 
+                  backgroundColor: "#10b981", 
+                  color: "white", 
+                  border: "none", 
+                  borderRadius: 6, 
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8
+                }}
+              >
+                🔗 Share Puzzle
+              </button>
+              <button 
                 onClick={resetForm}
                 style={{ 
                   padding: "12px 24px", 
@@ -182,8 +205,8 @@ export default function CreatePuzzle({ onCreated }: any) {
     <div style={{ padding: "40px 24px" }}>
       <div style={{ width: 900, maxWidth: "100%", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <h2 style={{ margin: "0 0 8px 0", fontSize: 32, fontWeight: 700, color: "#1e293b" }}>Create Puzzle</h2>
-          <p style={{ margin: 0, color: "#64748b", fontSize: 16 }}>Design tactical challenges for your team</p>
+          <h2 style={{ margin: "0 0 8px 0", fontSize: 32, fontWeight: 700, color: "#1e293b" }}>Create a new Tactics Puzzle</h2>
+          <p style={{ margin: 0, color: "#64748b", fontSize: 16 }}>Design tactical challenges and share them with your team</p>
         </div>
         <input
           placeholder="Team Name (this is how players will find your puzzles)"
@@ -232,7 +255,7 @@ export default function CreatePuzzle({ onCreated }: any) {
           <>
             <h3>Step 1: Set Starting Positions</h3>
             <p style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
-              Drag players to their starting positions. Double-click to lock/unlock players.
+              Drag players to their starting positions. Double-click to lock/unlock players. Locked players will not be able to be moved during the puzzle. The ball carrier is always Red Player 1 (you cannot change this). Once you have moved the players to their start positions, click 'Save Starting Positions' to continue.
             </p>
             
             <div style={{ maxWidth: 400, margin: "0 auto" }}>
@@ -257,7 +280,7 @@ export default function CreatePuzzle({ onCreated }: any) {
           <>
             <h3>Step 2: Set Solution Positions</h3>
             <p style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
-              Drag players to their solution positions (locked players cannot be moved)
+              Drag players to their solution positions (locked players cannot be moved). Once you have moved the players to their solution positions, click 'Save Solution Positions' to continue. Note, the solution must match exactly.
             </p>
             
             <div style={{ maxWidth: 400, margin: "0 auto" }}>
@@ -280,19 +303,11 @@ export default function CreatePuzzle({ onCreated }: any) {
                 Back to Starting Positions
               </button>
               <button 
-                onClick={saveSolutionPositions} 
-                style={{ padding: "10px 20px", fontSize: 16, backgroundColor: "#2196F3", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}
+                onClick={saveSolutionAndSubmit} 
+                style={{ padding: "10px 20px", fontSize: 16, backgroundColor: "#4CAF50", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}
               >
-                Save Solution Positions
+                Save Puzzle
               </button>
-              {solutionPositions.length > 0 && (
-                <button 
-                  onClick={submit} 
-                  style={{ padding: "10px 20px", fontSize: 16, backgroundColor: "#4CAF50", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}
-                >
-                  Save Puzzle
-                </button>
-              )}
             </div>
           </>
         )}
