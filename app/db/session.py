@@ -1,9 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
+import os
 
-from app.core.config import settings
-
-DATABASE_URL = settings.DATABASE_URL
+# Load DATABASE_URL directly from environment to avoid module caching issues
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql+psycopg://michaelhodge@localhost:5432/ssp")
 
 engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(
