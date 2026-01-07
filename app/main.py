@@ -6,15 +6,11 @@ from app.core.config import settings
 app = FastAPI(title="Soccer Puzzle Coach")
 
 # Configure CORS for production
-origins = [
-    settings.FRONTEND_URL,
-    "http://localhost:5173",  # Keep for local development
-]
-
+# Allow all origins for MVP - tighten in production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins for MVP
+    allow_credentials=False,  # Must be False when using wildcard origins
     allow_methods=["*"],
     allow_headers=["*"],
 )
