@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: soccer-puzzle-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: soccer-puzzle-db
+          property: connectionString
+      - key: FRONTEND_URL
+        value: https://your-frontend-url.vercel.app
+
+databases:
+  - name: soccer-puzzle-db
+    databaseName: ssp
+    user: ssp_user
