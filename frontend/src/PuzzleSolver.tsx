@@ -59,7 +59,7 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
           const solutionData = await solutionRes.json();
           const solutionMap: { [playerId: string]: number } = {};
           solutionData.forEach((sol: any) => {
-            const player = initialPlayers.find(p => p.label === sol.player_label);
+            const player = initialPlayers.find(p => p.id === sol.player_label);
             if (player) {
               solutionMap[player.id] = sol.square_id;
             }
@@ -90,7 +90,7 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
       });
 
       const positions = movedPlayers.map((p) => ({
-        player_label: p.label,
+        player_label: p.id,
         square_id: p.square,
       }));
 
