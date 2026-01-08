@@ -58,3 +58,11 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
