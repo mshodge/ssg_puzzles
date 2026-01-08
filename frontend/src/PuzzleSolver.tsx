@@ -41,7 +41,7 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
       const initialPlayers: PlayerState[] = Object.entries(data.teams)
         .flatMap(([_, team]: any) =>
           team.players.map((p: any) => ({
-            id: p.id,
+            id: p.label, // Use label (A1, B1, etc.) as id for matching with backend
             label: p.label.replace(/^[AB]/, ''), // Display just the number (1-4) instead of A1-B4
             square: p.start_square,
             color: team.color,
