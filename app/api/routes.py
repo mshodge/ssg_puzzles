@@ -269,3 +269,20 @@ def validate_puzzle(
             return {"correct": False, "solution_answer": None}
 
     return {"correct": True, "solution_answer": puzzle.solution_answer}
+
+@router.delete("/puzzles/{puzzle_id}")
+def delete_puzzle(
+    puzzle_id: uuid.UUID,
+    db: Session = Depends(get_db),
+):
+    puzzle = db.query(Puzzle).filter(
+        Puzzle.id == puzzle_id
+    ).first()
+
+    if not puzzle:
+        raise HTTPException(status_code=404, detail="Puzzle not found")
+
+    db.delete(puzzle)
+    db.commit()
+
+    return {"message": "Puzzle deleted successfully"}

@@ -91,7 +91,7 @@ class Player(Base):
     )
 
     puzzle_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("puzzles.id")
+        ForeignKey("puzzles.id", ondelete="CASCADE")
     )
 
     team: Mapped[str] = mapped_column(String)
@@ -118,10 +118,10 @@ class Position(Base):
         default=uuid.uuid4
     )
     puzzle_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("puzzles.id")
+        ForeignKey("puzzles.id", ondelete="CASCADE")
     )
     player_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("players.id")
+        ForeignKey("players.id", ondelete="CASCADE")
     )
 
     square_id: Mapped[int] = mapped_column(Integer)
