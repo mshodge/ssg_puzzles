@@ -10,6 +10,7 @@ type PlayerState = {
   hasBall: boolean;
   team?: string;
   locked?: boolean;
+  indicator?: string | null;
 };
 
 export default function CreatePuzzle({ onCreated }: any) {
@@ -42,6 +43,24 @@ export default function CreatePuzzle({ onCreated }: any) {
     ));
   }
 
+  function cyclePlayerIndicator(playerId: string) {
+    setPlayers(prev => prev.map(p => {
+      if (p.id === playerId) {
+        // Cycle through: none -> attack -> defend -> none
+        let nextIndicator: string | null = null;
+        if (!p.indicator) {
+          nextIndicator = 'attack';
+        } else if (p.indicator === 'attack') {
+          nextIndicator = 'defend';
+        } else {
+          nextIndicator = null;
+        }
+        return { ...p, indicator: nextIndicator };
+      }
+      return p;
+    }));
+  }
+
   function saveStartingPositions() {
     setStartingPositions([...players]);
     setStep("solution");
@@ -68,7 +87,11 @@ export default function CreatePuzzle({ onCreated }: any) {
         team: p.id.startsWith("A") ? "A" : "B", 
         label: p.id
       })),
-      starting_positions: startingPositions.map(p => ({ player_label: p.id, square_id: p.square })),
+      starting_positions: startingPositions.map(p => ({ 
+        player_label: p.id, 
+        square_id: p.square,
+        indicator: p.indicator || null
+      })),
       locked_positions: startingPositions
         .filter(p => p.locked)
         .map(p => ({ player_label: p.id, square_id: p.square })),
@@ -273,16 +296,140 @@ export default function CreatePuzzle({ onCreated }: any) {
           <>
             <h3>Step 1: Set Starting Positions</h3>
             <p style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
-              Drag players to their starting positions. Double-click to lock/unlock players. Locked players will not be able to be moved during the puzzle. The ball carrier is always Red Player 1 (you cannot change this). Once you have moved the players to their start positions, click 'Save Starting Positions' to continue.
+              Drag players to their starting positions. The ball carrier is always Red Player 1. Once you have moved the players to their start positions, click 'Save Starting Positions' to continue.
             </p>
             
             <div style={{ maxWidth: 400, margin: "0 auto" }}>
               <Pitch 
                 initialPlayers={players}
                 onPlayerMove={setPlayers}
-                onPlayerDoubleClick={togglePlayerLock}
                 style={{ width: "100%", border: "1px solid #ccc", display: "block" }}
               />
+            </div>
+
+            <div style={{ 
+              marginTop: 16, 
+              padding: "16px", 
+              backgroundColor: "#f8fafc", 
+              borderRadius: 8,
+              border: "1px solid #e2e8f0"
+            }}>
+              <h4 style={{ margin: "0 0 12px 0", fontSize: 16 }}>Player Controls</h4>
+              
+              <div style={{ marginBottom: 16 }}>
+                <strong style={{ fontSize: 14 }}>🔒 Lock Players:</strong>
+                <p style={{ fontSize: 13, color: "#666", margin: "4px 0 8px 0" }}>
+                  Locked players cannot be moved during the puzzle
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: "bold", marginBottom: 8, color: "#dc2626" }}>🔴 Red Team</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {players.filter(p => p.id.startsWith("A")).map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => togglePlayerLock(p.id)}
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: 14,
+                            backgroundColor: p.locked ? "#fbbf24" : "#fee2e2",
+                            color: p.locked ? "#78350f" : "#991b1b",
+                            border: "1px solid #fca5a5",
+                            borderRadius: 4,
+                            cursor: "pointer",
+                            fontWeight: p.locked ? "bold" : "normal",
+                            textAlign: "left"
+                          }}
+                        >
+                          {p.locked ? "🔒 " : ""}Player {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: "bold", marginBottom: 8, color: "#2563eb" }}>🔵 Blue Team</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {players.filter(p => p.id.startsWith("B")).map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => togglePlayerLock(p.id)}
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: 14,
+                            backgroundColor: p.locked ? "#fbbf24" : "#dbeafe",
+                            color: p.locked ? "#78350f" : "#1e40af",
+                            border: "1px solid #93c5fd",
+                            borderRadius: 4,
+                            cursor: "pointer",
+                            fontWeight: p.locked ? "bold" : "normal",
+                            textAlign: "left"
+                          }}
+                        >
+                          {p.locked ? "🔒 " : ""}Player {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <strong style={{ fontSize: 14 }}>⚔️🛡️ Visual Hints for Kids:</strong>
+                <p style={{ fontSize: 13, color: "#666", margin: "4px 0 8px 0" }}>
+                  Add icons to help kids understand each player's role
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: "bold", marginBottom: 8, color: "#dc2626" }}>🔴 Red Team</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {players.filter(p => p.id.startsWith("A")).map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => cyclePlayerIndicator(p.id)}
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: 14,
+                            backgroundColor: "#fee2e2",
+                            color: "#991b1b",
+                            border: "1px solid #fca5a5",
+                            borderRadius: 4,
+                            cursor: "pointer",
+                            textAlign: "left"
+                          }}
+                        >
+                          {p.indicator === 'attack' ? '⚔️ ' : p.indicator === 'defend' ? '🛡️ ' : '○ '}Player {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: "bold", marginBottom: 8, color: "#2563eb" }}>🔵 Blue Team</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {players.filter(p => p.id.startsWith("B")).map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => cyclePlayerIndicator(p.id)}
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: 14,
+                            backgroundColor: "#dbeafe",
+                            color: "#1e40af",
+                            border: "1px solid #93c5fd",
+                            borderRadius: 4,
+                            cursor: "pointer",
+                            textAlign: "left"
+                          }}
+                        >
+                          {p.indicator === 'attack' ? '⚔️ ' : p.indicator === 'defend' ? '🛡️ ' : '○ '}Player {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <p style={{ fontSize: 12, color: "#64748b", margin: "8px 0 0 0", fontStyle: "italic" }}>
+                  Click to cycle: None (○) → ⚔️ Attack → 🛡️ Defend
+                </p>
+              </div>
             </div>
             
             <div style={{ marginTop: 20}}>

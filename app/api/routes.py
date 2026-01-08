@@ -2,21 +2,21 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.db.session import SessionLocal
 from app.db.models import Puzzle, Player, Position
-from app.schemas.puzzle import PuzzleCreate, PuzzleOut, PuzzleValidationRequest, PuzzleValidationResponse, PuzzleDetailOut
+from app.db.session import get_db
+from app.schemas.puzzle import (
+    PuzzleCreate,
+    PuzzleOut,
+    PuzzleDetailOut,
+    PuzzleValidationRequest,
+    PuzzleValidationResponse,
+    PlayerFeedback,
+)
+from app.core.grid import GRID_4V4
 from app.api import users
 
 router = APIRouter()
 router.include_router(users.router)
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.post("/puzzles", response_model=PuzzleOut)
@@ -75,6 +75,10 @@ def create_puzzle(
                     status_code=400,
                     detail=f"Invalid player {pos.player_label}"
                 )
+            # Update player indicator if provided in starting positions
+            if position_type == "start" and hasattr(pos, 'indicator') and pos.indicator:
+                player_lookup[pos.player_label].indicator = pos.indicator
+            
             db.add(Position(
                 puzzle_id=puzzle.id,
                 player_id=player_lookup[pos.player_label].id,
@@ -158,7 +162,8 @@ def get_puzzle(
             "label": player.label,
             "start_square": start_lookup.get(player.id),
             "has_ball": player.id == puzzle.ball_carrier_id,
-            "locked": player.id in locked_player_ids
+            "locked": player.id in locked_player_ids,
+            "indicator": player.indicator
         })
 
     return {
@@ -261,14 +266,79 @@ def validate_puzzle(
     # Check all solution players are present
     for player_id in solution_lookup:
         if player_id not in submitted_lookup:
-            return {"correct": False}
+            return {"correct": False, "feedback": "Not all players have been positioned."}
 
-    # Compare positions
+    # Calculate distances for each player
+    player_feedback_list = []
+    all_correct = True
+    
     for player_id, correct_square in solution_lookup.items():
-        if submitted_lookup[player_id] != correct_square:
-            return {"correct": False, "solution_answer": None}
-
-    return {"correct": True, "solution_answer": puzzle.solution_answer}
+        submitted_square = submitted_lookup[player_id]
+        distance = GRID_4V4.manhattan_distance(submitted_square, correct_square)
+        is_correct = distance == 0
+        
+        if not is_correct:
+            all_correct = False
+        
+        # Find player label for feedback
+        player = next(p for p in players if p.id == player_id)
+        
+        player_feedback_list.append(PlayerFeedback(
+            player_label=player.label,
+            distance=distance,
+            is_correct=is_correct
+        ))
+    
+    # Generate feedback message
+    if all_correct:
+        return {
+            "correct": True,
+            "solution_answer": puzzle.solution_answer,
+            "feedback": "Perfect! All players are in the correct positions.",
+            "player_feedback": player_feedback_list
+        }
+    
+    # Build detailed feedback message
+    incorrect_players = [pf for pf in player_feedback_list if not pf.is_correct]
+    correct_players = [pf for pf in player_feedback_list if pf.is_correct]
+    
+    feedback_parts = []
+    
+    if len(incorrect_players) == 1:
+        pf = incorrect_players[0]
+        team_color = "Red" if pf.player_label.startswith("A") else "Blue"
+        player_num = pf.player_label.replace("A", "").replace("B", "")
+        square_word = "square" if pf.distance == 1 else "squares"
+        feedback_parts.append(f"{team_color} Player {player_num} is {pf.distance} {square_word} from the ideal solution")
+    else:
+        for pf in incorrect_players:
+            team_color = "Red" if pf.player_label.startswith("A") else "Blue"
+            player_num = pf.player_label.replace("A", "").replace("B", "")
+            square_word = "square" if pf.distance == 1 else "squares"
+            feedback_parts.append(f"{team_color} Player {player_num} is {pf.distance} {square_word}")
+    
+    if correct_players and incorrect_players:
+        correct_labels = []
+        for pf in correct_players:
+            team_color = "Red" if pf.player_label.startswith("A") else "Blue"
+            player_num = pf.player_label.replace("A", "").replace("B", "")
+            correct_labels.append(f"{team_color} Player {player_num}")
+        
+        if len(correct_labels) == 1:
+            correct_text = f"{correct_labels[0]} is correct"
+        else:
+            correct_text = f"{', '.join(correct_labels[:-1])} and {correct_labels[-1]} are correct"
+        
+        feedback = f"{correct_text}, but {', and '.join(feedback_parts)} from the ideal solution."
+    else:
+        feedback = f"{', and '.join(feedback_parts)} from the ideal solution."
+    
+    return {
+        "correct": False,
+        "solution_answer": None,
+        "feedback": feedback,
+        "player_feedback": player_feedback_list
+    }
 
 @router.delete("/puzzles/{puzzle_id}")
 def delete_puzzle(

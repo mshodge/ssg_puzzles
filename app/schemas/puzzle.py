@@ -5,6 +5,7 @@ import uuid
 class PositionInput(BaseModel):
     player_label: str
     square_id: int = Field(ge=0, le=62)
+    indicator: str | None = None
 
 class PuzzleCreate(BaseModel):
     title: str
@@ -43,6 +44,7 @@ class PlayerOut(BaseModel):
     start_square: int
     has_ball: bool
     locked: bool = False
+    indicator: str | None = None
 
 class TeamOut(BaseModel):
     color: str
@@ -72,6 +74,13 @@ class PositionSubmission(BaseModel):
 class PuzzleValidationRequest(BaseModel):
     positions: List[PositionSubmission]
 
+class PlayerFeedback(BaseModel):
+    player_label: str
+    distance: int
+    is_correct: bool
+
 class PuzzleValidationResponse(BaseModel):
     correct: bool
     solution_answer: str | None = None
+    feedback: str | None = None
+    player_feedback: List[PlayerFeedback] = []

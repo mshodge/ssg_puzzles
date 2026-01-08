@@ -21,7 +21,7 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
   const [players, setPlayers] = useState<PlayerState[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ correct: boolean; solution_answer?: string | null } | null>(null);
+  const [result, setResult] = useState<{ correct: boolean; solution_answer?: string | null; feedback?: string | null } | null>(null);
   const [showingSolution, setShowingSolution] = useState(false);
   const [solutionPositions, setSolutionPositions] = useState<{ [playerId: string]: number }>({});
   const [showingHint, setShowingHint] = useState(false);
@@ -47,6 +47,7 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
             color: team.color,
             hasBall: p.has_ball,
             locked: p.locked || false,
+            indicator: p.indicator || null,
           }))
         );
 
@@ -206,11 +207,22 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
         </div>
 
         <div style={{ marginBottom: 24 }}>
-          <h2 style={{ margin: "0 0 8px 0" }}>{puzzle.title}</h2>
+          <h2 style={{ margin: "0 0 12px 0", fontSize: 28 }}>{puzzle.title}</h2>
           {puzzle.description && (
-            <p style={{ margin: "0 0 12px 0", color: "#64748b" }}>
-              {puzzle.description}
-            </p>
+            <div style={{ 
+              padding: "16px", 
+              backgroundColor: "#e0f2fe", 
+              borderRadius: 8, 
+              border: "2px solid #0ea5e9",
+              marginBottom: 12
+            }}>
+              <div style={{ fontSize: 18, marginBottom: 4, fontWeight: 600, color: "#0c4a6e" }}>
+                📋 Your Mission:
+              </div>
+              <p style={{ margin: 0, color: "#0c4a6e", fontSize: 16, lineHeight: 1.5 }}>
+                {puzzle.description}
+              </p>
+            </div>
           )}
           <div style={{ display: "flex", gap: 16, fontSize: 14, color: "#64748b" }}>
             <span>
@@ -233,16 +245,24 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
               textAlign: "center",
             }}
           >
-            <div style={{ fontSize: 32, marginBottom: 8 }}>
-              {result.correct ? "✅" : "❌"}
+            <div style={{ 
+              fontSize: 64, 
+              marginBottom: 12,
+              animation: result.correct ? "bounce 0.5s ease-in-out" : "none"
+            }}>
+              {result.correct ? "🎉🎊✅🎊🎉" : "🤔"}
             </div>
-            <h3 style={{ margin: "0 0 8px 0", color: result.correct ? "#15803d" : "#991b1b" }}>
-              {result.correct ? "Correct Solution!" : "Incorrect Solution"}
+            <h3 style={{ 
+              margin: "0 0 8px 0", 
+              color: result.correct ? "#15803d" : "#991b1b",
+              fontSize: result.correct ? 28 : 24
+            }}>
+              {result.correct ? "🌟 Amazing! You Did It! 🌟" : "Not Quite!"}
             </h3>
-            <p style={{ margin: 0, color: result.correct ? "#166534" : "#7f1d1d" }}>
-              {result.correct
+            <p style={{ margin: 0, color: result.correct ? "#166534" : "#7f1d1d", fontSize: 16 }}>
+              {result.feedback || (result.correct
                 ? "Great job! You solved the puzzle correctly."
-                : "Not quite right. Try again!"}
+                : "Not quite right. Try again!")}
             </p>
             {result.correct && result.solution_answer && (
               <div style={{ 
@@ -260,26 +280,35 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
         )}
 
         <div style={{ marginBottom: 16 }}>
-          <h3>Solve the Puzzle</h3>
-          <p style={{ fontSize: 14, color: "#64748b" }}>
-            Drag the players to their correct positions to solve the puzzle.
-          </p>
+          <div style={{ 
+            padding: "16px", 
+            backgroundColor: "#fef3c7", 
+            borderRadius: 8, 
+            border: "2px solid #FFD700",
+            marginBottom: 16
+          }}>
+            <div style={{ fontSize: 20, marginBottom: 8 }}>⭐ Move the Yellow Players! ⭐</div>
+            <p style={{ fontSize: 16, color: "#78350f", margin: 0, fontWeight: 500 }}>
+              Drag players with yellow circles to solve the puzzle
+            </p>
+          </div>
           {puzzle.hint && (
             <div style={{ marginTop: 12 }}>
               <button
                 onClick={() => setShowingHint(!showingHint)}
                 style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
+                  padding: "12px 24px",
+                  fontSize: 18,
                   backgroundColor: "#f59e0b",
                   color: "white",
                   border: "none",
-                  borderRadius: 4,
+                  borderRadius: 8,
                   cursor: "pointer",
-                  fontWeight: "bold"
+                  fontWeight: "bold",
+                  boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
                 }}
               >
-                {showingHint ? "Hide Hint" : "Show Hint"}
+                💡 {showingHint ? "Hide Hint" : "Need Help?"}
               </button>
               {showingHint && (
                 <div style={{
@@ -289,8 +318,8 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
                   border: "1px solid #f59e0b",
                   borderRadius: 6
                 }}>
-                  <strong style={{ color: "#92400e" }}>Hint:</strong>
-                  <p style={{ margin: "8px 0 0 0", color: "#78350f" }}>{puzzle.hint}</p>
+                  <div style={{ fontSize: 18, marginBottom: 8 }}>💡 <strong style={{ color: "#92400e" }}>Hint:</strong></div>
+                  <p style={{ margin: "8px 0 0 0", color: "#78350f", fontSize: 16 }}>{puzzle.hint}</p>
                 </div>
               )}
             </div>
@@ -306,57 +335,68 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
               const player = players.find((p) => p.id === playerId);
               return !player?.locked;
             }}
-            style={{ width: "100%", border: "1px solid #ccc", display: "block" }}
+            style={{ 
+              width: "100%", 
+              border: "4px solid #FFD700", 
+              borderRadius: 8,
+              display: "block",
+              boxShadow: "0 4px 12px rgba(255, 215, 0, 0.3)"
+            }}
           />
         </div>
 
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
           <button
             onClick={submitSolution}
             disabled={submitting || showingSolution}
             style={{
               flex: 1,
-              padding: "12px 24px",
-              fontSize: 16,
+              minWidth: 200,
+              padding: "16px 32px",
+              fontSize: 20,
               backgroundColor: submitting || showingSolution ? "#94a3b8" : "#10b981",
               color: "white",
               border: "none",
-              borderRadius: 6,
+              borderRadius: 12,
               cursor: submitting || showingSolution ? "not-allowed" : "pointer",
               fontWeight: "bold",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
             }}
           >
-            {submitting ? "Checking..." : "Submit Solution"}
+            {submitting ? "⏳ Checking..." : "✅ Check My Answer"}
           </button>
           <button
             onClick={toggleSolution}
             disabled={Object.keys(solutionPositions).length === 0}
             style={{
-              padding: "12px 24px",
-              fontSize: 16,
+              padding: "16px 32px",
+              fontSize: 20,
               backgroundColor: Object.keys(solutionPositions).length === 0 ? "#94a3b8" : showingSolution ? "#f59e0b" : "#3b82f6",
               color: "white",
               border: "none",
-              borderRadius: 6,
+              borderRadius: 12,
               cursor: Object.keys(solutionPositions).length === 0 ? "not-allowed" : "pointer",
               fontWeight: "bold",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
             }}
           >
-            {showingSolution ? "Hide Solution" : "Show Solution"}
+            {showingSolution ? "🙈 Hide Answer" : "👀 Show Answer"}
           </button>
           <button
             onClick={resetPuzzle}
             style={{
-              padding: "12px 24px",
-              fontSize: 16,
+              padding: "16px 32px",
+              fontSize: 20,
               backgroundColor: "#64748b",
               color: "white",
               border: "none",
-              borderRadius: 6,
+              borderRadius: 12,
               cursor: "pointer",
+              fontWeight: "bold",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
             }}
           >
-            Reset
+            🔄 Start Over
           </button>
         </div>
       </div>

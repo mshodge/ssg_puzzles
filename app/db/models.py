@@ -96,6 +96,7 @@ class Player(Base):
 
     team: Mapped[str] = mapped_column(String)
     label: Mapped[str] = mapped_column(String)
+    indicator: Mapped[str | None] = mapped_column(String, nullable=True)
 
     puzzle = relationship(
         "Puzzle",

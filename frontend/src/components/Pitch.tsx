@@ -7,6 +7,7 @@ type PlayerState = {
   color: string;
   hasBall: boolean;
   locked?: boolean;
+  indicator?: string | null;
 };
 
 type Props = {
@@ -246,8 +247,8 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
             <circle
               r="3.5"
               fill={player.color}
-              stroke="white"
-              strokeWidth="0.8"
+              stroke={player.locked ? "white" : "#FFD700"}
+              strokeWidth={player.locked ? "0.8" : "1.2"}
             />
             <text
               y="1"
@@ -269,27 +270,15 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
               </text>
             )}
 
-            {player.locked && (
-              <g transform="translate(-3, 3)">
-                <rect
-                  x="-0.8"
-                  y="-1.2"
-                  width="1.6"
-                  height="1.8"
-                  fill="#FFD700"
-                  stroke="#000"
-                  strokeWidth="0.3"
-                  rx="0.3"
-                />
-                <circle
-                  cx="0"
-                  cy="-1.5"
-                  r="0.6"
-                  fill="none"
-                  stroke="#000"
-                  strokeWidth="0.3"
-                />
-              </g>
+            {(player.indicator || player.locked) && (
+              <text
+                x="0"
+                y="-5"
+                textAnchor="middle"
+                fontSize="4"
+              >
+                {player.locked ? '🔒' : player.indicator === 'attack' ? '⚔️' : player.indicator === 'defend' ? '🛡️' : ''}
+              </text>
             )}
           </g>
         );
