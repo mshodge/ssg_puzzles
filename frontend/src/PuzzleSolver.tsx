@@ -164,11 +164,31 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
           </button>
           
           <button
-            onClick={() => {
+            onClick={async () => {
               const url = `${window.location.origin}/puzzle/${puzzleId}`;
-              navigator.clipboard.writeText(url).then(() => {
-                alert("Puzzle link copied to clipboard!");
-              });
+              const shareData = {
+                title: puzzle.title,
+                text: `Check out this football tactics puzzle: ${puzzle.title}`,
+                url: url,
+              };
+
+              if (navigator.share) {
+                try {
+                  await navigator.share(shareData);
+                } catch (err) {
+                  if ((err as Error).name !== 'AbortError') {
+                    console.error('Error sharing:', err);
+                  }
+                }
+              } else {
+                try {
+                  await navigator.clipboard.writeText(url);
+                  alert("Puzzle link copied to clipboard!");
+                } catch (err) {
+                  console.error('Error copying to clipboard:', err);
+                  alert(`Share this link: ${url}`);
+                }
+              }
             }}
             style={{
               padding: "8px 16px",

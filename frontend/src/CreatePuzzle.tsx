@@ -159,11 +159,31 @@ export default function CreatePuzzle({ onCreated }: any) {
             </p>
             <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
               <button 
-                onClick={() => {
+                onClick={async () => {
                   const url = `${window.location.origin}/puzzle/${createdPuzzle.id}`;
-                  navigator.clipboard.writeText(url).then(() => {
-                    alert("Puzzle link copied to clipboard! Share it with your team.");
-                  });
+                  const shareData = {
+                    title: createdPuzzle.title,
+                    text: `Check out this football tactics puzzle: ${createdPuzzle.title}`,
+                    url: url,
+                  };
+
+                  if (navigator.share) {
+                    try {
+                      await navigator.share(shareData);
+                    } catch (err) {
+                      if ((err as Error).name !== 'AbortError') {
+                        console.error('Error sharing:', err);
+                      }
+                    }
+                  } else {
+                    try {
+                      await navigator.clipboard.writeText(url);
+                      alert("Puzzle link copied to clipboard! Share it with your team.");
+                    } catch (err) {
+                      console.error('Error copying to clipboard:', err);
+                      alert(`Share this link: ${url}`);
+                    }
+                  }
                 }}
                 style={{ 
                   padding: "12px 24px", 
@@ -211,7 +231,7 @@ export default function CreatePuzzle({ onCreated }: any) {
           <p style={{ margin: 0, color: "#64748b", fontSize: 16 }}>Design tactical challenges and share them with your team</p>
         </div>
         <input
-          placeholder="Team Name (this is how players will find your puzzles)"
+          placeholder="Team Name"
           value={teamName}
           onChange={(e) => setTeamName(e.target.value)}
           style={{ display: "block", marginBottom: 12, width: "100%", padding: 8, boxSizing: "border-box" }}
@@ -223,7 +243,7 @@ export default function CreatePuzzle({ onCreated }: any) {
           style={{ display: "block", marginBottom: 12, width: "100%", padding: 8, boxSizing: "border-box" }}
         />
         <textarea
-          placeholder="Description (e.g. Goal kick, move Red #3 to a wide open space for a pass from Red #1)"
+          placeholder="Description (e.g. Goal kick, move Red Player 3 to a wide open space for a pass from Red Player 1)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           style={{ display: "block", marginBottom: 12, width: "100%", padding: 8, minHeight: 80, boxSizing: "border-box" }}
@@ -280,9 +300,9 @@ export default function CreatePuzzle({ onCreated }: any) {
           </>
         ) : (
           <>
-            <h3>Step 2: Set Solution Positions</h3>
+            <h3>Step 2: Set Solution Positions and Save Puzzle</h3>
             <p style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
-              Drag players to their solution positions (locked players cannot be moved). Once you have moved the players to their solution positions, click 'Save Solution Positions' to continue. Note, the solution must match exactly.
+              Drag players to their solution positions (locked players cannot be moved). Once you have moved the players to their solution positions, click 'Save Puzzle' to save the puzzle. Note, the solution must match exactly.
             </p>
             
             <div style={{ maxWidth: 400, margin: "0 auto" }}>

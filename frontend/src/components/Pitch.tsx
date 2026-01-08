@@ -259,14 +259,14 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
             </text>
 
             {player.hasBall && (
-              <circle
-                cx="3"
-                cy="-3"
-                r="1.2"
-                fill="yellow"
-                stroke="black"
-                strokeWidth="0.3"
-              />
+              <text
+                x="3"
+                y="3"
+                textAnchor="middle"
+                fontSize="4"
+              >
+                ⚽
+              </text>
             )}
 
             {player.locked && (
@@ -278,7 +278,7 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
                   height="1.8"
                   fill="#FFD700"
                   stroke="#000"
-                  strokeWidth="0.15"
+                  strokeWidth="0.3"
                   rx="0.3"
                 />
                 <circle
@@ -287,7 +287,7 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
                   r="0.6"
                   fill="none"
                   stroke="#000"
-                  strokeWidth="0.15"
+                  strokeWidth="0.3"
                 />
               </g>
             )}

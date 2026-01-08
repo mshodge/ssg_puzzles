@@ -62,7 +62,7 @@ export default function Solve({ onSelectPuzzle }: SolveProps) {
           }}>
             🔍 Search by Team Name
           </label>
-          <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap"}}>
             <input
               placeholder="Enter your team name..."
               value={teamName}
@@ -92,7 +92,9 @@ export default function Solve({ onSelectPuzzle }: SolveProps) {
                 backgroundColor: teamName.trim() && !loading ? "#667eea" : "#cbd5e1", 
                 color: "white", 
                 border: "none", 
-                borderRadius: 8, 
+                borderRadius: 8,
+                flexShrink: 0,
+                width: "auto",
                 cursor: teamName.trim() && !loading ? "pointer" : "not-allowed",
                 transition: "all 0.2s",
                 boxShadow: teamName.trim() && !loading ? "0 4px 12px rgba(102, 126, 234, 0.4)" : "none"
@@ -152,15 +154,16 @@ export default function Solve({ onSelectPuzzle }: SolveProps) {
           <div>
             <div style={{ 
               display: "flex", 
-              alignItems: "center", 
-              justifyContent: "space-between",
-              marginBottom: 20
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 20,
+              minWidth: 0
             }}>
-              <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: "#1e293b" }}>
+              <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: "#1e293b", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 Puzzles for {teamName}
               </h3>
               <span style={{ 
-                padding: "6px 12px",
+                padding: "6px 20px",
                 backgroundColor: "#667eea",
                 color: "white",
                 borderRadius: 20,
@@ -202,11 +205,11 @@ export default function Solve({ onSelectPuzzle }: SolveProps) {
                   <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
                     <span style={{ 
                       padding: "4px 12px",
-                      backgroundColor: "#f1f5f9",
+                      backgroundColor: puzzle.mode === "attacking" ? "#dcfce7" : "#fed7aa",
                       borderRadius: 6,
                       fontSize: 13,
                       fontWeight: 500,
-                      color: "#475569"
+                      color: puzzle.mode === "attacking" ? "#166534" : "#9a3412"
                     }}>
                       📋 {puzzle.mode}
                     </span>
