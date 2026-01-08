@@ -160,7 +160,6 @@ export default function CreatePuzzle({ onCreated }: any) {
                   const url = `${window.location.origin}/puzzle/${createdPuzzle.id}`;
                   const shareData = {
                     title: createdPuzzle.title,
-                    text: `Check out this football tactics puzzle: ${createdPuzzle.title}`,
                     url: url,
                   };
 

@@ -168,7 +168,6 @@ export default function PuzzleSolver({ puzzleId, onBack }: PuzzleSolverProps) {
               const url = `${window.location.origin}/puzzle/${puzzleId}`;
               const shareData = {
                 title: puzzle.title,
-                text: `Check out this football tactics puzzle: ${puzzle.title}`,
                 url: url,
               };
 
