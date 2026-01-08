@@ -99,6 +99,40 @@ export default function About() {
             </ul>
           </section>
 
+          <section style={{ marginBottom: 32 }}>
+            <h2 style={{ fontSize: 24, fontWeight: 600, color: "#1e293b", marginBottom: 16 }}>
+              Examples
+            </h2>
+            <p style={{ marginBottom: 16, color: "#475569", lineHeight: 1.6 }}>
+              Want to see how it works? Check out some example puzzles created by coaches and teams to get inspiration for your own tactical challenges.
+            </p>
+            <a 
+              href="/solve?team=Examples"
+              style={{
+                display: "inline-block",
+                padding: "12px 24px",
+                backgroundColor: "#667eea",
+                color: "white",
+                textDecoration: "none",
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 16,
+                transition: "all 0.2s",
+                boxShadow: "0 2px 8px rgba(102, 126, 234, 0.3)"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#5568d3";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#667eea";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              View Example Puzzles →
+            </a>
+          </section>
+
           <section>
             <h2 style={{ fontSize: 24, fontWeight: 600, color: "#1e293b", marginBottom: 16 }}>
               Perfect For

@@ -6,7 +6,12 @@ type SolveProps = {
 };
 
 export default function Solve({ onSelectPuzzle }: SolveProps) {
-  const [teamName, setTeamName] = useState(() => localStorage.getItem("last_team_search") || "");
+  const [teamName, setTeamName] = useState(() => {
+    // Check URL first, then localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlTeam = urlParams.get('team');
+    return urlTeam || localStorage.getItem("last_team_search") || "";
+  });
   const [puzzles, setPuzzles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(() => Boolean(localStorage.getItem("last_team_search")));
@@ -24,6 +29,10 @@ export default function Solve({ onSelectPuzzle }: SolveProps) {
     setLoading(true);
     setSearched(true);
     localStorage.setItem("last_team_search", teamName);
+    
+    // Update URL with team name
+    const newUrl = `/solve?team=${encodeURIComponent(teamName)}`;
+    window.history.pushState({}, "", newUrl);
     
     try {
       const res = await fetch(`${API_URL}/puzzles?team_name=${encodeURIComponent(teamName)}`);
@@ -172,6 +181,49 @@ export default function Solve({ onSelectPuzzle }: SolveProps) {
               }}>
                 {puzzles.length} {puzzles.length === 1 ? "puzzle" : "puzzles"}
               </span>
+              <button
+                onClick={async () => {
+                  const url = `${window.location.origin}/solve?team=${encodeURIComponent(teamName)}`;
+                  const shareData = {
+                    title: `${teamName} - Football Tactics Puzzles`,
+                    url: url,
+                  };
+
+                  if (navigator.share) {
+                    try {
+                      await navigator.share(shareData);
+                    } catch (err) {
+                      if ((err as Error).name !== 'AbortError') {
+                        console.error('Error sharing:', err);
+                      }
+                    }
+                  } else {
+                    try {
+                      await navigator.clipboard.writeText(url);
+                      alert("Team puzzles link copied to clipboard!");
+                    } catch (err) {
+                      console.error('Error copying to clipboard:', err);
+                      alert(`Share this link: ${url}`);
+                    }
+                  }
+                }}
+                style={{
+                  padding: "6px 16px",
+                  backgroundColor: "#10b981",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 20,
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  whiteSpace: "nowrap"
+                }}
+              >
+                🔗 Share Team
+              </button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {puzzles.map((puzzle) => (
