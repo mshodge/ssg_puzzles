@@ -146,7 +146,7 @@ export default function Solve({ onSelectPuzzle }: SolveProps) {
             boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
             border: "2px dashed #e2e8f0"
           }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🤔</div>
+            <div style={{ fontSize: 48, fontWeight:100, fontFamily: "Courier New", marginBottom: 16 }}>Huh?!</div>
             <h3 style={{ margin: "0 0 8px 0", fontSize: 20, color: "#1e293b" }}>
               No puzzles found
             </h3>
