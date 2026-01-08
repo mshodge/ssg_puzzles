@@ -19,10 +19,61 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Upgrade schema."""
-    pass
+    """Add CASCADE delete to foreign keys."""
+    # Drop and recreate foreign keys with CASCADE
+    
+    # Players table - puzzle_id foreign key
+    op.drop_constraint('players_puzzle_id_fkey', 'players', type_='foreignkey')
+    op.create_foreign_key(
+        'players_puzzle_id_fkey',
+        'players', 'puzzles',
+        ['puzzle_id'], ['id'],
+        ondelete='CASCADE'
+    )
+    
+    # Positions table - puzzle_id foreign key
+    op.drop_constraint('positions_puzzle_id_fkey', 'positions', type_='foreignkey')
+    op.create_foreign_key(
+        'positions_puzzle_id_fkey',
+        'positions', 'puzzles',
+        ['puzzle_id'], ['id'],
+        ondelete='CASCADE'
+    )
+    
+    # Positions table - player_id foreign key
+    op.drop_constraint('positions_player_id_fkey', 'positions', type_='foreignkey')
+    op.create_foreign_key(
+        'positions_player_id_fkey',
+        'positions', 'players',
+        ['player_id'], ['id'],
+        ondelete='CASCADE'
+    )
 
 
 def downgrade() -> None:
-    """Downgrade schema."""
-    pass
+    """Remove CASCADE delete from foreign keys."""
+    # Drop and recreate foreign keys without CASCADE
+    
+    # Positions table - player_id foreign key
+    op.drop_constraint('positions_player_id_fkey', 'positions', type_='foreignkey')
+    op.create_foreign_key(
+        'positions_player_id_fkey',
+        'positions', 'players',
+        ['player_id'], ['id']
+    )
+    
+    # Positions table - puzzle_id foreign key
+    op.drop_constraint('positions_puzzle_id_fkey', 'positions', type_='foreignkey')
+    op.create_foreign_key(
+        'positions_puzzle_id_fkey',
+        'positions', 'puzzles',
+        ['puzzle_id'], ['id']
+    )
+    
+    # Players table - puzzle_id foreign key
+    op.drop_constraint('players_puzzle_id_fkey', 'players', type_='foreignkey')
+    op.create_foreign_key(
+        'players_puzzle_id_fkey',
+        'players', 'puzzles',
+        ['puzzle_id'], ['id']
+    )
