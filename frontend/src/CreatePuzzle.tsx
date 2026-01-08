@@ -35,7 +35,6 @@ export default function CreatePuzzle({ onCreated }: any) {
 
   const [players, setPlayers] = useState(initialPlayers);
   const [startingPositions, setStartingPositions] = useState<PlayerState[]>([]);
-  const [solutionPositions, setSolutionPositions] = useState<PlayerState[]>([]);
 
   function togglePlayerLock(playerId: string) {
     setPlayers(prev => prev.map(p => 
@@ -49,9 +48,8 @@ export default function CreatePuzzle({ onCreated }: any) {
   }
 
   async function saveSolutionAndSubmit() {
-    // Save solution positions in state for UI
+    // Build solution positions from current player state
     const currentSolutionPositions = [...players];
-    setSolutionPositions(currentSolutionPositions);
     
     // Build payload with current solution positions
     const ballCarrier = startingPositions.find(p => p.hasBall) || players.find(p => p.hasBall);
@@ -120,7 +118,6 @@ export default function CreatePuzzle({ onCreated }: any) {
     setStep("starting");
     setPlayers(initialPlayers);
     setStartingPositions([]);
-    setSolutionPositions([]);
     setCreatedPuzzle(null);
   }
 
