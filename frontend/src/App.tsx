@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import CreatePuzzle from "./CreatePuzzle";
+import Play from "./Play";
 import Solve from "./Solve";
 import PuzzleSolver from "./PuzzleSolver";
 import About from "./About";
@@ -57,30 +58,20 @@ export default function App() {
       >
       <nav style={{ 
         background: "linear-gradient(135deg, #ba0000 0%, #000000 100%)",
-        padding: "16px 32px", 
+        padding: "12px 16px", 
         display: "flex",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "center",
+        flexWrap: "wrap",
+        gap: 8,
         boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h1 style={{ 
-            margin: 0, 
-            fontSize: 20, 
-            fontWeight: 700, 
-            color: "white",
-            letterSpacing: "-0.5px"
-          }}>
-            
-          </h1>
-        </div>
-        
-        <div style={{ display: "flex", gap: 12}}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
           <button
             onClick={() => navigate("/create")}
             style={{
-              padding: "10px 20px",
-              fontSize: 15,
+              padding: "8px 16px",
+              fontSize: 14,
               fontWeight: 600,
               backgroundColor: currentPath === "/create" ? "white" : "rgba(255,255,255,0.2)",
               color: currentPath === "/create" ? "#ba0000" : "white",
@@ -106,8 +97,8 @@ export default function App() {
           <button
             onClick={() => navigate("/solve")}
             style={{
-              padding: "10px 20px",
-              fontSize: 15,
+              padding: "8px 16px",
+              fontSize: 14,
               fontWeight: 600,
               backgroundColor: currentPath === "/solve" ? "white" : "rgba(255,255,255,0.2)",
               color: currentPath === "/solve" ? "#ba0000" : "white",
@@ -131,10 +122,37 @@ export default function App() {
             Solve Puzzles
           </button>
           <button
+            onClick={() => navigate("/play")}
+            style={{
+              padding: "8px 16px",
+              fontSize: 14,
+              fontWeight: 600,
+              backgroundColor: currentPath === "/play" ? "white" : "rgba(255,255,255,0.2)",
+              color: currentPath === "/play" ? "#ba0000" : "white",
+              border: "none",
+              borderRadius: 8,
+              cursor: "pointer",
+              transition: "all 0.2s",
+              boxShadow: currentPath === "/play" ? "0 2px 8px rgba(0,0,0,0.1)" : "none"
+            }}
+            onMouseEnter={(e) => {
+              if (currentPath !== "/play") {
+                e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.3)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPath !== "/play") {
+                e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)";
+              }
+            }}
+          >
+            Playground
+          </button>
+          <button
             onClick={() => navigate("/about")}
             style={{
-              padding: "10px 20px",
-              fontSize: 15,
+              padding: "8px 16px",
+              fontSize: 14,
               fontWeight: 600,
               backgroundColor: currentPath === "/about" ? "white" : "rgba(255,255,255,0.2)",
               color: currentPath === "/about" ? "#ba0000" : "white",
@@ -181,6 +199,8 @@ export default function App() {
             <Solve onSelectPuzzle={selectPuzzle} />
           ) : currentPath === "/about" ? (
             <About />
+          ) : currentPath === "/play" ? (
+            <Play />
           ) : (
             <CreatePuzzle />
           )}

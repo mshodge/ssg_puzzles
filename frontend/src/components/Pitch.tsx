@@ -17,6 +17,8 @@ type Props = {
   onPlayerDoubleClick?: (playerId: string) => void;
   canDrag?: (playerId: string) => boolean;
   style?: React.CSSProperties;
+  ballPosition?: { square: number; x: number; y: number } | null;
+  onBallMove?: (square: number, x: number, y: number) => void;
 };
 
 const GRID_COLS = 7; // 63 squares = 7 x 9
@@ -53,7 +55,7 @@ const squareToCenter = (squareId: number) => {
   };
 };
 
-export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPlayerMove, onPlayerDoubleClick, canDrag, style }: Props) {
+export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPlayerMove, onPlayerDoubleClick, canDrag, style, ballPosition, onBallMove }: Props) {
   const rows = puzzle?.grid?.rows || GRID_ROWS;
   const cols = puzzle?.grid?.cols || GRID_COLS;
   const svgRef = useRef<SVGSVGElement>(null);
@@ -71,6 +73,7 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
 
   const [players, setPlayers] = useState(initialPlayers);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [draggingBall, setDraggingBall] = useState(false);
 
   useEffect(() => {
     if (initialPlayersProp) {
@@ -91,14 +94,27 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
     }
   }
 
+  function onBallPointerDown() {
+    setDraggingBall(true);
+  }
+
   function onPointerMove(e: React.PointerEvent) {
-    if (!draggingId || !svgRef.current) return;
-
+    if (!svgRef.current) return;
+    
     const rect = svgRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
+    const normX = (e.clientX - rect.left) / rect.width;
+    const normY = (e.clientY - rect.top) / rect.height;
+    const square = positionToSquare(normX, normY, cols, rows);
 
-    const square = positionToSquare(x, y, cols, rows);
+    if (draggingBall && onBallMove) {
+      // Convert normalized coordinates to viewBox coordinates
+      const x = normX * 71;
+      const y = normY * 100;
+      onBallMove(square, x, y);
+      return;
+    }
+
+    if (!draggingId) return;
 
     setPlayers((prev) => {
       // Check if another player is already in this square
@@ -116,6 +132,7 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
 
   function onPointerUp() {
     setDraggingId(null);
+    setDraggingBall(false);
   }
 
   return (
@@ -235,7 +252,6 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
       {players.map((player) => {
         const { x, y } = squareToCenter(player.square);
 
-
         return (
           <g
             key={player.id}
@@ -259,7 +275,8 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
               {player.label}
             </text>
 
-            {player.hasBall && (
+            {/* Show ball with player only if not using draggable ball mode */}
+            {player.hasBall && ballPosition === undefined && (
               <text
                 x="3"
                 y="3"
@@ -283,6 +300,24 @@ export default function Pitch({ puzzle, initialPlayers: initialPlayersProp, onPl
           </g>
         );
       })}
+
+      {/* Draggable ball - only render if ballPosition is provided */}
+      {ballPosition !== undefined && ballPosition !== null && (
+        <g
+          transform={`translate(${ballPosition.x}, ${ballPosition.y})`}
+          onPointerDown={onBallPointerDown}
+          style={{ cursor: "grab" }}
+        >
+          <text
+            x="0"
+            y="0"
+            textAnchor="middle"
+            fontSize="3.5"
+          >
+            ⚽
+          </text>
+        </g>
+      )}
     </svg>
   );
 }
